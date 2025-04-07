@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<title>OTP Migration Parser</title>
+
+	<style>
+		* {
+			box-sizing: border-box;
+		}
+
+		body {
+			font-family: system-ui, sans-serif;
+			background: #f4f6f9;
+			color: #333;
+			padding: 2rem;
+			justify-items: center;
+		}
+
+		h1 {
+			font-size: 2rem;
+			margin: 0 0 1rem;
+		}
+
+		main {
+			background: #fff;
+			padding: 2rem;
+			border-radius: 1rem;
+			box-shadow: 0 4px 20px #0001;
+			width: 100%;
+		}
+
+		input[type="text"] {
+			width: 100%;
+			padding: 0.75rem;
+			border-radius: 0.5rem;
+			border: 1px solid #ccc;
+			font-size: 1rem;
+			margin-bottom: 1rem;
+		}
+
+		button {
+			padding: 0.75rem 1.5rem;
+			font-size: 1rem;
+			border: none;
+			border-radius: 0.5rem;
+			background-color: #07f;
+			color: #fff;
+			cursor: pointer;
+			transition: background 0.2s ease;
+		}
+
+		button:hover {
+			background-color: #05b;
+		}
+
+		ul {
+			list-style: none;
+			padding: 0;
+			margin: 1rem 0 0;
+		}
+
+		li {
+			background: #eee;
+			padding: 1rem;
+			border-radius: 0.5rem;
+			margin-top: 1rem;
+			white-space: pre-line;
+		}
+
+		p {
+			color: red;
+			margin-top: 1rem;
+		}
+
+		ul:empty, p:empty {
+			display: none;
+		}
+	</style>
+</head>
+
+<body>
+	<main>
+		<h1>OTP Migration URL Parser</h1>
+		<input type="text" placeholder="Paste &quot;otpauth-migration://&quot; URL here" />
+		<button>Parse</button>
+		<p></p>
+		<ul>
+			<li><strong>See it in action with this example:</strong>
+				otpauth-migration://offline?data=CkoKDZePmX7z8qHgFlH9yVcSIlRoaXNfaXNfYW5fRXhhbXBsZTplbWFpbEBlbWFpbC5jb20aD0V4YW1wbGVfV2Vic2l0ZSABKAEwAhABGAEgAA%3D%3D
+			</li>
+		</ul>
+	</main>
+
+	<script type="module">
+		import { parseOtpMigrationUrl } from './otp-migration-parser.js';
+
+		document.querySelector('button').addEventListener('click', () => {
+			const input = document.querySelector('input').value.trim();
+			const listElement = document.querySelector('ul');
+			const errorElement = document.querySelector('p');
+
+			listElement.innerHTML = '';
+			errorElement.textContent = '';
+
+			try {
+				const accounts = parseOtpMigrationUrl(input);
+
+				if (!accounts.length) {
+					errorElement.textContent = 'No accounts found.';
+
+					return;
+				}
+
+				for (const account of accounts) {
+					const li = document.createElement('li');
+
+					li.innerHTML = `
+						<strong>Name:</strong> ${account.name}
+						<strong>Issuer:</strong> ${account.issuer}
+						<strong>Type:</strong> ${account.type}
+						<strong>Algorithm:</strong> ${account.algorithm}
+						<strong>Digits:</strong> ${account.digits}
+						<strong>Secret:</strong> ${account.secret}
+						${account.counter !== undefined ? `<strong>Counter:</strong> ${account.counter}` : ''}
+					`.trim();
+
+					listElement.appendChild(li);
+				}
+			}
+			catch (error) {
+				errorElement.textContent = error.message;
+			}
+		});
+	</script>
+</body>
+
+</html>
